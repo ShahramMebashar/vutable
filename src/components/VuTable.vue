@@ -1,21 +1,34 @@
 <template>
+
+
   <div class="vutable-wrapper">
+
     <table class="vutable">
-      <!-- Header consist of columns which we can select from columns -->
+
       <thead class="vutable__header">
         <tr>
-          <th v-for="column in upperCaseColumns" :key="column" class="vutable__header-column">{{ column }}</th>
+          <th v-for="column in resolvedColumns" :key="column" class="vutable__header-column">{{ uppercase(column) }}</th>
         </tr>
       </thead>
+      <tbody>
+
+      </tbody>
 
     </table>
+
   </div>
+
+
 </template>
 
 <script>
 export default {
 
+
+
   name: 'VueTable',
+
+
 
   props: {
     columns: {
@@ -25,23 +38,64 @@ export default {
   },
 
 
-  mounted() {
-   //
+
+  data(){
+    return {
+      apiColumns: null
+    }
+  },
+
+
+
+  async created() {
+
+   //Call api and grab all columns
+   if(!this.columns || this.columns.length == 0) {
+
+     try {
+       const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+       const data =  await response.json();
+       this.apiColumns = Object.keys(data[0]);
+     } catch (e) {
+       console.error(e);
+     }
+
+   }
 
   },
 
 
   computed: {
 
-    upperCaseColumns() {
+    resolvedColumns() {
+
       let columns = [];
+
       if(this.columns && this.columns.length > 0) {
        columns = this.columns;
       }
-      return columns.map( column => column.toString().toUpperCase() );
+
+      if(this.apiColumns && this.apiColumns.length > 0) {
+        columns = this.apiColumns;
+      }
+
+      return columns;
+    }
+
+  },
+
+
+
+  methods: {
+
+    uppercase: function (value) {
+      return value.toString().toUpperCase();
     }
 
   }
+
+
+
 
 }
 </script>
