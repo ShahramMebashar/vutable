@@ -11,7 +11,12 @@
         </tr>
       </thead>
       <tbody>
-
+          <tr v-for="row in rows" :key="row.id">
+            <td>{{ row.userId }}</td>
+            <td>{{ row.id }}</td>
+            <td>{{ row.title }}</td>
+            <td>{{ row.body }}</td>
+          </tr>
       </tbody>
 
     </table>
@@ -31,17 +36,23 @@ export default {
 
 
   props: {
+
     columns: {
       type: Array,
       default: null
-    }
+    },
+    endpoint: {
+      type: String
+    },
+
   },
 
 
 
   data(){
     return {
-      apiColumns: null
+      apiColumns: null,
+      rows: null
     }
   },
 
@@ -50,12 +61,13 @@ export default {
   async created() {
 
    //Call api and grab all columns
-   if(!this.columns || this.columns.length == 0) {
+   if( (!this.columns || this.columns.length == 0) && this.endpoint) {
 
      try {
-       const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+       const response = await fetch(this.endpoint);
        const data =  await response.json();
        this.apiColumns = Object.keys(data[0]);
+       this.rows = data;
      } catch (e) {
        console.error(e);
      }

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>A new intuitive table</h1>
-    <vu-table :columns="['id', 'title', 'body']"></vu-table>
+    <vu-table :columns="[]" endpoint="https://jsonplaceholder.typicode.com/posts"></vu-table>
   </div>
 </template>
 
