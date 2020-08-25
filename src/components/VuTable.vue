@@ -7,15 +7,26 @@
 
       <thead class="vutable__header">
         <tr>
-          <th v-for="column in resolvedColumns" :key="column" class="vutable__header-column">{{ uppercase(column) }}</th>
+          <th
+            v-for="column in resolvedColumns"
+            :key="column"
+            class="vutable__column vutable__header-column"
+            @click="filterBy(column)"
+          >
+          {{ uppercase(column) }}
+          </th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
-          <tr v-for="row in rows" :key="row.id">
-            <td>{{ row.userId }}</td>
-            <td>{{ row.id }}</td>
-            <td>{{ row.title }}</td>
-            <td>{{ row.body }}</td>
+          <tr v-for="row in filterabelRows" :key="row.id" class="vutable__row">
+            <td v-for="column in resolvedColumns" :key="column" class="vutable__column">{{ row[column] }}</td>
+            <td class="vutable__column">
+              <div class="vutable__column-actions">
+                <button class="btn btn--delete" @click="actionClick($event, 'delete', row)">D</button>
+                <button class="btn btn--edit" @click="actionClick($event, 'edit', row)">E</button>
+              </div>
+            </td>
           </tr>
       </tbody>
 
@@ -34,6 +45,9 @@ export default {
   name: 'VueTable',
 
 
+  //========================
+  // Props
+  //========================
 
   props: {
 
@@ -48,34 +62,47 @@ export default {
   },
 
 
+  //========================
+  // Data
+  //========================
 
   data(){
     return {
       apiColumns: null,
-      rows: null
+      rows: null,
+      filterByColumn: null,
+      filterDirection: 'asc'
     }
   },
 
-
+  //========================
+  // Created hook of Vue
+  //========================
 
   async created() {
 
    //Call api and grab all columns
-   if( (!this.columns || this.columns.length == 0) && this.endpoint) {
+   if(this.endpoint) {
 
-     try {
-       const response = await fetch(this.endpoint);
-       const data =  await response.json();
-       this.apiColumns = Object.keys(data[0]);
+    try {
+       const data = await this.getData();
        this.rows = data;
+
+       if( (!this.columns || this.columns.length == 0)) {
+         this.apiColumns = Object.keys(data[0]);
+       }
      } catch (e) {
        console.error(e);
      }
 
    }
 
+
   },
 
+  //========================
+  // Computed data
+  //========================
 
   computed: {
 
@@ -84,7 +111,7 @@ export default {
       let columns = [];
 
       if(this.columns && this.columns.length > 0) {
-       columns = this.columns;
+       columns = this.columns.map( column => column.name);
       }
 
       if(this.apiColumns && this.apiColumns.length > 0) {
@@ -92,16 +119,66 @@ export default {
       }
 
       return columns;
+    },
+
+    filterabelRows() {
+      if(!this.rows) return;
+
+      let rows = this.rows;
+      if(this.filterByColumn) {
+        rows = rows.sort(this.sort)
+      }
+      return rows;
     }
+
 
   },
 
+  //========================
+  // Emits event
+  //========================
 
+  emits: ['delete', 'edit'],
+
+
+  //========================
+  // Methods
+  //========================
 
   methods: {
 
+    async getData() {
+      let response = await fetch(this.endpoint);
+      return await response.json();
+    },
+
+    sort(rowA, rowB) {
+      let modifier = 1;
+      if (this.filterDirection === 'desc') modifier = -1;
+
+      if(rowA[this.filterByColumn] > rowB[this.filterByColumn]) return 1 * modifier;
+      if(rowA[this.filterByColumn] < rowB[this.filterByColumn]) return -1 * modifier;
+      return 0;
+    },
+
+    filterBy(column) {
+      if(this.filterByColumn === column) {
+        return this.filterDirection = this.filterDirection === 'asc' ? 'desc' : 'asc';
+      }
+      this.filterByColumn = column;
+    },
+
+    actionClick(e, actionType, row) {
+      console.log('fire event: ' + actionType )
+      this.$emit(actionType, row);
+    },
+
     uppercase: function (value) {
       return value.toString().toUpperCase();
+    },
+
+    limit(str, length = 100) {
+      return str.substr(0, length) + '...';
     }
 
   }
@@ -114,34 +191,79 @@ export default {
 
 
 <style lang="scss" scoped>
-
-  .vutable-wrapper {}
+  $delete: #e74c3c;
+  $edit: #3498db;
+  .vutable-wrapper {
+    overflow: hidden;
+    box-shadow: 0 2px 3px rgba(0,0,0, .16);
+  }
 
   .vutable {
     border-collapse: collapse;
-    width: 100%;
+    min-width: 100%;
     border-radius: 15px;
     background: white;
 
-    & th, & td {
-      border-bottom: 1px solid #e8e8e8;
-      padding: 8px 16px;
+    &__column{
+      border-bottom: 1px solid #f4f4f4;
+      padding: 12px 16px;
       text-align: left;
+
+      &-actions {
+        display: flex;
+        align-items: center
+      }
+    }
+
+    &__row {
+      padding: 16px 0;
     }
 
   }
 
   .vutable__header {
-    background: #fcfcfc;
+    background: #ecf0f1;
 
     &-column {
       font-size: 14px;
       font-weight: normal;
     }
 
-
   }
 
+ .btn {
+  display: inline-block;
+  line-height: 1;
+  padding: 8px 16px;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: .3s;
+  background: none;
+  border-radius: 8px;
+  outline: none;
+
+  &:focus, &:focus-within {
+    border-color: #34495e;
+  }
+
+  &--default:hover {
+    background: #f6f6f6;
+    color: #333;
+  }
+
+  &--delete {
+    color: #fff;
+    background: $delete;
+    margin-right: 4px;
+  }
+
+  &--edit {
+    color: #fff;
+    background: $edit;
+  }
+
+ }
 
 
 </style>

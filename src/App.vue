@@ -1,7 +1,17 @@
 <template>
   <div id="app">
     <h1>A new intuitive table</h1>
-    <vu-table :columns="[]" endpoint="https://jsonplaceholder.typicode.com/posts"></vu-table>
+    <vu-table
+    :columns="[
+      {id: 0, name: 'id', sortable: false},
+      {id: 1, name: 'title', sortable: true},
+      {id: 2, name: 'userId', sortable: true}
+    ]"
+    endpoint="https://jsonplaceholder.typicode.com/posts"
+    @delete="deleteHandler"
+    @edit="deleteHandler"
+    >
+    </vu-table>
   </div>
 </template>
 
@@ -15,6 +25,18 @@ export default {
   components: {
     VuTable
   },
+
+  methods: {
+
+    deleteHandler(row) {
+      console.log({
+        id: row.id,
+        title: row.title
+      });
+      console.log('send delete api call for post id ' + row.id );
+    }
+
+  }
 
 
 }

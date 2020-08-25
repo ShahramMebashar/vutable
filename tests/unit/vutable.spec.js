@@ -7,21 +7,21 @@ describe('VuTable.vue', () => {
 
     const columns = ['id','name'];
     const wrapper = shallowMount(VuTable, {
-      props: { columns }
+      props: { columns, endpoint: null }
     })
     expect(wrapper.find('thead th:first-child').text()).toMatch(columns[0].toUpperCase())
-    expect(wrapper.find('thead th:last-child').text()).toMatch(columns[1].toUpperCase())
+    expect(wrapper.find('thead th:nth-child(2)').text()).toMatch(columns[1].toUpperCase())
 
   })
 
 
-  it('it doesn\'t render columns when thers is no array to columns prop', () => {
+  it('it renders all columns from api schema when there is no columns prop data', () => {
 
     const columns = null
     const wrapper = shallowMount(VuTable, {
         props: { columns }
     });
-    expect(wrapper.find('thead th:first-child').exists()).toBe(false)
+    expect(wrapper.find('thead th:first-child').exists()).toBe(true)
 
   })
 
