@@ -5,22 +5,25 @@
 
     <table class="vutable">
 
+
       <thead class="vutable__header">
         <tr>
           <th
             v-for="column in resolvedColumns"
-            :key="column"
+            :key="column.id"
             class="vutable__column vutable__header-column"
-            @click="filterBy(column)"
+            @click="sortBy(column)"
           >
-          {{ uppercase(column) }}
+          {{ uppercase(column.name) }}
           </th>
           <th></th>
         </tr>
       </thead>
+
+
       <tbody>
-          <tr v-for="row in filterabelRows" :key="row.id" class="vutable__row">
-            <td v-for="column in resolvedColumns" :key="column" class="vutable__column">{{ row[column] }}</td>
+          <tr v-for="row in sortableRows" :key="row.id" class="vutable__row">
+            <td v-for="column in resolvedColumns" :key="column.id" class="vutable__column">{{ row[column.name] }}</td>
             <td class="vutable__column">
               <div class="vutable__column-actions">
                 <button class="btn btn--delete" @click="actionClick($event, 'delete', row)">D</button>
@@ -29,6 +32,7 @@
             </td>
           </tr>
       </tbody>
+
 
     </table>
 
@@ -70,8 +74,8 @@ export default {
     return {
       apiColumns: null,
       rows: null,
-      filterByColumn: null,
-      filterDirection: 'asc'
+      sortByColumn: null,
+      sortDirection: 'asc'
     }
   },
 
@@ -111,21 +115,21 @@ export default {
       let columns = [];
 
       if(this.columns && this.columns.length > 0) {
-       columns = this.columns.map( column => column.name);
+       columns = this.columns.map( column => column);
       }
 
       if(this.apiColumns && this.apiColumns.length > 0) {
-        columns = this.apiColumns;
+        columns = this.apiColumns.map( (column, index) => ({id: index, name: column, sortable: true}));
       }
 
       return columns;
     },
 
-    filterabelRows() {
+    sortableRows() {
       if(!this.rows) return;
 
       let rows = this.rows;
-      if(this.filterByColumn) {
+      if(this.sortByColumn) {
         rows = rows.sort(this.sort)
       }
       return rows;
@@ -154,18 +158,21 @@ export default {
 
     sort(rowA, rowB) {
       let modifier = 1;
-      if (this.filterDirection === 'desc') modifier = -1;
+      if (this.sortDirection === 'desc') modifier = -1;
 
-      if(rowA[this.filterByColumn] > rowB[this.filterByColumn]) return 1 * modifier;
-      if(rowA[this.filterByColumn] < rowB[this.filterByColumn]) return -1 * modifier;
+      if(rowA[this.sortByColumn] > rowB[this.sortByColumn]) return 1 * modifier;
+      if(rowA[this.sortByColumn] < rowB[this.sortByColumn]) return -1 * modifier;
       return 0;
     },
 
-    filterBy(column) {
-      if(this.filterByColumn === column) {
-        return this.filterDirection = this.filterDirection === 'asc' ? 'desc' : 'asc';
+    sortBy(column) {
+      if(!column.sortable) return;
+
+      if(this.sortByColumn === column.name) {
+        return this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       }
-      this.filterByColumn = column;
+
+      this.sortByColumn = column.name;
     },
 
     actionClick(e, actionType, row) {
