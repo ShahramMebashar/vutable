@@ -1,18 +1,22 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>A new intuitive table</h1>
+    <vu-table :columns="['id', 'name', 'age', 'status']"></vu-table>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import VuTable from './components/VuTable';
 
 export default {
+
   name: 'App',
+
   components: {
-    HelloWorld
-  }
+    VuTable
+  },
+
+
 }
 </script>
 
@@ -24,5 +28,10 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  max-width: 1040px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto
 }
+
 </style>
